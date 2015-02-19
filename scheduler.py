@@ -1,47 +1,43 @@
 import gevent
-from gevent.wsgi import WSGIServer
-from flask import Flask
-from ConfigParser import SafeConfigParser
-
-parser = SafeConfigParser()
-parser.read('serverconfig.ini')
+from datetime import datetime, timedelta
 
 
-def output(outputs, state):
-    print 'Outputs ' + ", ".join(map(str, outputs)) + ' set to ' + str(state)
+class Schedule(object):
+
+    def __init__(self, block, io_bank, start=datetime.utcnow()):
+        self.block = block
+        self.io_bank = io_bank
+        self.due = start
+        self.active = True
+        self._generator = self._start_generator()
+
+    def _start_generator(self):
+        for event in self.block.traverse():
+            self.due = datetime.utcnow() + event.duration
+            yield event
+
+    def execute(self):
+        try:
+            next_event = next(self._generator)
+            print(datetime.utcnow() + ': IO bank ' + io_bank + ' set to ' + next_event.state)
+        except StopIteration:
+            self.active = False
 
 
 class Scheduler(object):
 
-    def __init__(self, outputs, name=""):
-        self.outputs = outputs
-        self.name = name
-        self.threads = []
-        self.block = None
-
-    def clear(self):
-        """Clear all scheduled events."""
-        gevent.killall(self.threads)
-
-    def schedule(self, block):
-        """ Schedules the given block to run immediately."""
-        self.clear()
-        self.block = block
-        delay = 0
-        for event in block.traverse():
-            self.threads.append(gevent.spawn_later(delay, output,
-                                                   self.outputs, event.state))
-            delay += event.duration
-
-    def is_running(self):
-        if self.threads:
-            return True
-        else:
-            return False
+    def __init__(self):
+        self.schedules = []
+        self.worker = gevent.Greenlet.spawn(self._worker)
 
 
-if __name__ == '__main__':
-    app = Flask(__name__)
-    port = parser.getint('Server', 'port')
-    server = WSGIServer(('', port), app)
-    server.serve_forever()
+    def _worker(self):
+        while True:
+            for schedule in self.schedules:
+                if schedule.active and schedule.due < datetime.utcnow():
+                    schedule.execute()
+            gevent.sleep(1)
+
+
+    def add_schedule(self, block, io_bank, start=datetime.utcnow()):
+        self.schedules.append(Schedule(block, io_bank, start))
