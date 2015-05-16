@@ -26,4 +26,4 @@ class ChannelGroup(object):
 
     def set(self, state):
         self.state = state
-        print 'Channel %s set to %s' % (self.name, state)
+        print 'Channel group  %s set to %s' % (self.name, state)

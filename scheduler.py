@@ -1,4 +1,10 @@
 import gevent
+from gevent.wsgi import WSGIServer
+from flask import Flask
+from ConfigParser import SafeConfigParser
+
+parser = SafeConfigParser()
+parser.read('serverconfig.ini')
 
 
 def output(outputs, state):
@@ -27,11 +33,15 @@ class Scheduler(object):
                                                    self.outputs, event.state))
             delay += event.duration
 
-    def join(self):
-        gevent.joinall(self.threads)
-
     def is_running(self):
         if self.threads:
             return True
         else:
             return False
+
+
+if __name__ == '__main__':
+    app = Flask(__name__)
+    port = parser.getint('Server', 'port')
+    server = WSGIServer(('', port), app)
+    server.serve_forever()
