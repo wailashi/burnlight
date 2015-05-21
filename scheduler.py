@@ -19,10 +19,13 @@ class Schedule(object):
     def execute(self):
         try:
             next_event = next(self._generator)
-            print(datetime.utcnow() + ': IO bank ' + io_bank + ' set to ' + next_event.state)
+            self.set_outputs(next_event.state)
         except StopIteration:
             self.active = False
 
+
+    def set_outputs(self, state):
+            print(str(datetime.utcnow()) + ': IO bank ' + str(self.io_bank) + ' set to ' + state)
 
 class Scheduler(object):
 
