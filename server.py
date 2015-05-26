@@ -17,11 +17,15 @@ app.debug = True
 
 @app.route('/')
 def index():
-	return "Hello World!"
+    return "Hello World!"
 
 @app.errorhandler(404)
 def not_found():
     return make_response(jsonify({'error' : 'Not found'}), 404)
+
+@app.errorhandler(400)
+def not_found():
+    return make_response(jsonify({'error' : 'Bad request'}), 400)
 
 @app.route('/api/schedules', methods=['GET'])
 def get_schedules():
