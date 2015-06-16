@@ -40,8 +40,8 @@ def create_schedule():
     if not isinstance(block, Block):
         print('Not a valid Block object')
         abort(400)
-    scheduler.add_schedule(block, None)
-    return jsonify({'success' : 'yay!'}), 201
+    schedule = scheduler.add_schedule(block, None)
+    return jsonify({'schedule' : schedule}), 201
 
 
 port = parser.getint('Server', 'port')

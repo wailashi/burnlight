@@ -13,7 +13,7 @@ class Block(object):
             self.items = items
 
     def __iter__(self):
-        for i in range(self.iterations):
+        for _ in range(self.iterations):
             for item in self.items:
                 yield item
 
