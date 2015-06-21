@@ -1,5 +1,4 @@
 import datetime
-import flask
 from flask.json import JSONEncoder, JSONDecoder
 from block import Block
 from scheduler import Schedule
@@ -9,28 +8,29 @@ class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.timedelta):
             return {
-                '__type__' : 'timedelta',
-                'days' : obj.days,
-                'seconds' : obj.seconds,
-                'microseconds' : obj.microseconds,
+                '__type__': 'timedelta',
+                'days': obj.days,
+                'seconds': obj.seconds,
+                'microseconds': obj.microseconds,
                 }
 
         elif isinstance(obj, Block):
             d = {
-                '__type__' : 'block',
+                '__type__': 'block',
                 }
             d.update(obj.__dict__)
             return d
 
         elif isinstance(obj, Schedule):
             return {
-                '__type__' : '__schedule__',
-                'block' : obj.block,
-                'active' : obj.active,
+                '__type__': '__schedule__',
+                'block': obj.block,
+                'active': obj.active,
                 }
 
         else:
             JSONEncoder.default(self, obj)
+
 
 class CustomJSONDecoder(JSONDecoder):
     def __init__(self, *args, **kwargs):
@@ -41,11 +41,11 @@ class CustomJSONDecoder(JSONDecoder):
         if '__type__' not in d:
             return d
 
-        type = d.pop('__type__')
-        if type == 'timedelta':
+        object_type = d.pop('__type__')
+        if object_type == 'timedelta':
             return datetime.timedelta(**d)
 
-        elif type == 'block':
+        elif object_type == 'block':
             duration = d.pop('duration')
             state = d.pop('state')
             iterations = d.pop('iterations')
@@ -53,7 +53,5 @@ class CustomJSONDecoder(JSONDecoder):
             return Block(state, duration, items, iterations)
 
         else:
-            d['__type__'] = type
+            d['__type__'] = object_type
             return d
-
-

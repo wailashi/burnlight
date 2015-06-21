@@ -3,6 +3,7 @@ import itertools
 from datetime import datetime, timedelta
 import gpio
 
+
 class Schedule(object):
     new_id = itertools.count().next
 
@@ -26,18 +27,17 @@ class Schedule(object):
         except StopIteration:
             self.active = False
 
-
     def set_outputs(self, state):
             print(str(datetime.utcnow()) + ': Channel ' + str(self.channels) + ' set to ' + state)
             for channel in self.channels.values():
                 channel.set(state)
+
 
 class Scheduler(object):
 
     def __init__(self):
         self.schedules = {}
         self._worker = gevent.Greenlet.spawn(self._worker)
-
 
     def _worker(self):
         while True:
@@ -46,10 +46,8 @@ class Scheduler(object):
                     schedule.execute()
             gevent.sleep(1)
 
-
     def add_schedule(self, block, channels, start=datetime.utcnow()):
         channels = gpio.channels
         new_schedule = Schedule(block, channels, start)
         self.schedules[new_schedule.id] = new_schedule
-        #self.schedules.append(Schedule(new_schedule))
         return new_schedule

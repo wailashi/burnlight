@@ -15,21 +15,26 @@ app.json_decoder = CustomJSONDecoder
 app.json_encoder = CustomJSONEncoder
 app.debug = True
 
+
 @app.route('/')
 def index():
     return "Hello World!"
 
+
 @app.errorhandler(404)
 def not_found():
-    return make_response(jsonify({'error' : 'Not found'}), 404)
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
 
 @app.errorhandler(400)
 def not_found():
-    return make_response(jsonify({'error' : 'Bad request'}), 400)
+    return make_response(jsonify({'error': 'Bad request'}), 400)
+
 
 @app.route('/api/schedules', methods=['GET'])
 def get_schedules():
-    return jsonify({'schedules' : scheduler.schedules})
+    return jsonify({'schedules': scheduler.schedules})
+
 
 @app.route('/api/schedules', methods=['POST'])
 def create_schedule():
@@ -41,10 +46,9 @@ def create_schedule():
         print('Not a valid Block object')
         abort(400)
     schedule = scheduler.add_schedule(block, None)
-    return jsonify({'schedule' : schedule}), 201
+    return jsonify({'schedule': schedule}), 201
 
 
 port = parser.getint('Server', 'port')
 server = WSGIServer(('', port), app)
 server.serve_forever()
-

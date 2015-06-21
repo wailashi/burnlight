@@ -56,7 +56,6 @@ class Block(object):
         print self.state
 
 
-
 root = Block('root')
 root.add(Block('1', duration=datetime.timedelta(seconds=3)))
 loop = Block('loop')
