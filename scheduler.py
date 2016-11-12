@@ -1,17 +1,17 @@
 import gevent
 import itertools
 from datetime import datetime, timedelta
-import gpio
+from output import OutputController
 
 
 class Schedule(object):
-    new_id = itertools.count().next
+    new_id = next(itertools.count())
 
-    def __init__(self, block, channels, start=datetime.utcnow()):
-        self.id = Schedule.new_id()
+    def __init__(self, block, start=datetime.utcnow()):
+        self.id = Schedule.new_id
         self.block = block
-        self.channels = channels
         self.due = start
+        self.output_controller = None
         self.active = True
         self._generator = self._start_generator()
 
@@ -28,16 +28,15 @@ class Schedule(object):
             self.active = False
 
     def set_outputs(self, state):
-            print(str(datetime.utcnow()) + ': Channel ' + str(self.channels) + ' set to ' + state)
-            for channel in self.channels.values():
-                channel.set(state)
+            self.output_controller.update_outputs(1,state)
 
 
 class Scheduler(object):
 
-    def __init__(self):
+    def __init__(self, output_controller):
         self.schedules = {}
         self._worker = gevent.Greenlet.spawn(self._worker)
+        self.output_controller = output_controller
 
     def _worker(self):
         while True:
@@ -46,8 +45,8 @@ class Scheduler(object):
                     schedule.execute()
             gevent.sleep(1)
 
-    def add_schedule(self, block, channels, start=datetime.utcnow()):
-        channels = gpio.channels
-        new_schedule = Schedule(block, channels, start)
+    def add_schedule(self, block, start=datetime.utcnow()):
+        new_schedule = Schedule(block, start)
+        new_schedule.output_controller = self.output_controller
         self.schedules[new_schedule.id] = new_schedule
         return new_schedule

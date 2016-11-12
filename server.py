@@ -1,14 +1,17 @@
-from ConfigParser import SafeConfigParser
-from gevent.wsgi import WSGIServer
+from configparser import SafeConfigParser 
+from gevent.pywsgi import WSGIServer
 from flask import Flask, jsonify, make_response, request, abort
 from scheduler import Scheduler
 from block import Block
 from serializer import CustomJSONDecoder, CustomJSONEncoder
+from output import OutputController, DebugHandler
 
-parser = SafeConfigParser()
-parser.read('serverconfig.ini')
+config = SafeConfigParser()
+config.read('config.ini')
 
-scheduler = Scheduler()
+output_controller = OutputController()
+DebugHandler(output_controller)
+scheduler = Scheduler(output_controller)
 
 app = Flask(__name__)
 app.json_decoder = CustomJSONDecoder
@@ -38,17 +41,18 @@ def get_schedules():
 
 @app.route('/api/schedules', methods=['POST'])
 def create_schedule():
-    if not request.get_json(force=True):
+    if not request.get_json(force=True): 
         print('Request has no JSON')
         abort(400)
     block = request.get_json()
     if not isinstance(block, Block):
         print('Not a valid Block object')
         abort(400)
-    schedule = scheduler.add_schedule(block, None)
+    print('Adding schedule')
+    schedule = scheduler.add_schedule(block)
     return jsonify({'schedule': schedule}), 201
 
 
-port = parser.getint('Server', 'port')
+port = config.getint('Server', 'port')
 server = WSGIServer(('', port), app)
 server.serve_forever()

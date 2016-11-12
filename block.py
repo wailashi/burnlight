@@ -53,7 +53,7 @@ class Block(object):
             print(output)
 
     def trigger(self):
-        print self.state
+        print(self.state)
 
 
 root = Block('root')
