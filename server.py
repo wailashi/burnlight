@@ -1,3 +1,4 @@
+import logging
 from configparser import SafeConfigParser 
 from gevent.pywsgi import WSGIServer
 from flask import Flask, jsonify, make_response, request, abort
@@ -5,6 +6,10 @@ from scheduler import Scheduler
 from block import Block
 from serializer import CustomJSONDecoder, CustomJSONEncoder
 from output import OutputController, DebugHandler
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 config = SafeConfigParser()
 config.read('config.ini')
@@ -55,4 +60,5 @@ def create_schedule():
 
 port = config.getint('Server', 'port')
 server = WSGIServer(('', port), app)
+log.info('Burnlight server started on %s',server.address)
 server.serve_forever()

@@ -1,8 +1,10 @@
 import gevent
+import logging
 import itertools
 from datetime import datetime, timedelta
 from output import OutputController
 
+log = logging.getLogger(__name__)
 
 class Schedule(object):
     new_id = next(itertools.count())
@@ -25,10 +27,14 @@ class Schedule(object):
             next_event = next(self._generator)
             self.set_outputs(next_event.state)
         except StopIteration:
+            log.info('Schedule %s finished!', self.id)
             self.active = False
 
     def set_outputs(self, state):
             self.output_controller.update_outputs(1,state)
+
+    def __repr__(self):
+        return '<Schedule {}>'.format(self.id)
 
 
 class Scheduler(object):
@@ -47,6 +53,7 @@ class Scheduler(object):
 
     def add_schedule(self, block, start=datetime.utcnow()):
         new_schedule = Schedule(block, start)
+        log.info('Adding Schedule %s',new_schedule)
         new_schedule.output_controller = self.output_controller
         self.schedules[new_schedule.id] = new_schedule
         return new_schedule
