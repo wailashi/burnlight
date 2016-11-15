@@ -3,7 +3,7 @@ import datetime
 
 class Block(object):
 
-    def __init__(self, state, duration=0, items=None, iterations=1):
+    def __init__(self, state, duration=datetime.timedelta(0), items=None, iterations=1):
         self.iterations = iterations
         self.state = state
         self.duration = duration
@@ -41,6 +41,15 @@ class Block(object):
                     yield sub
             else:
                 yield item
+
+    @property
+    def length(self):
+        length = datetime.timedelta(0)
+        for each in self.items:
+            length += each.length
+        length *= self.iterations
+        print(self.state, self.iterations, length)
+        return length + self.duration
 
     def print_structure(self):
         for indent, block in self.structure():
