@@ -1,5 +1,5 @@
 import logging
-from configparser import SafeConfigParser 
+from configparser import ConfigParser
 from gevent.pywsgi import WSGIServer
 from flask import Flask, jsonify, make_response, request, abort
 from scheduler import Scheduler
@@ -7,11 +7,12 @@ from block import Block
 from serializer import CustomJSONDecoder, CustomJSONEncoder
 from output import OutputController, DebugHandler
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-config = SafeConfigParser()
+config = ConfigParser()
 config.read('config.ini')
 
 output_controller = OutputController()
@@ -35,7 +36,7 @@ def not_found():
 
 
 @app.errorhandler(400)
-def not_found():
+def bad_request():
     return make_response(jsonify({'error': 'Bad request'}), 400)
 
 
@@ -46,7 +47,7 @@ def get_schedules():
 
 @app.route('/api/schedules', methods=['POST'])
 def create_schedule():
-    if not request.get_json(force=True): 
+    if not request.get_json(force=True):
         print('Request has no JSON')
         abort(400)
     block = request.get_json()
@@ -60,5 +61,5 @@ def create_schedule():
 
 port = config.getint('Server', 'port')
 server = WSGIServer(('', port), app)
-log.info('Burnlight server started on %s',server.address)
+log.info('Burnlight server started on %s', server.address)
 server.serve_forever()

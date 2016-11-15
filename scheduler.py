@@ -46,6 +46,7 @@ class Scheduler(object):
 
     def _worker(self):
         while True:
+            log.info('Worker tick.')
             for schedule in self.schedules.values():
                 if schedule.active and schedule.due < datetime.utcnow():
                     schedule.execute()
