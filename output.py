@@ -1,5 +1,6 @@
 import itertools
 
+
 class OutputController:
 
     def __init__(self):
@@ -24,6 +25,7 @@ class OutputController:
         for handler in self.__output_handlers:
             handler.add_channel(channel)
 
+
 class DebugHandler:
     def __init__(self, output_controller):
         output_controller.register_output_handler(self)
@@ -34,10 +36,11 @@ class DebugHandler:
     def add_channel(self, channel):
         print('Added channel {}'.format(channel))
 
+
 class Channel:
     new_channel_number = itertools.count()
 
-    def __init__(self, output_pin, input_pin = None):
+    def __init__(self, output_pin, input_pin=None):
         self.input_pin = input_pin
         self.output_pin = output_pin
         self.number = next(self.new_channel_number)
