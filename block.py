@@ -1,4 +1,6 @@
 import datetime
+import itertools
+import bisect
 
 
 class Block(object):
@@ -42,13 +44,22 @@ class Block(object):
             else:
                 yield item
 
+    def offsets(self):
+        offsets = itertools.accumulate((x.duration for x in self.traverse()))
+        states = (x.state for x in self.traverse())
+        return zip(offsets, states)
+
+    def state_at_time(self, time):
+        offsets, state = zip(*self.offsets())
+        i = bisect.bisect(offsets, time)
+        return state[i]
+
     @property
     def length(self):
         length = datetime.timedelta(0)
         for each in self.items:
             length += each.length
         length *= self.iterations
-        print(self.state, self.iterations, length)
         return length + self.duration
 
     def print_structure(self):

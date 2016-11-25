@@ -25,7 +25,7 @@ class CustomJSONEncoder(JSONEncoder):
             return {
                 '__type__': '__schedule__',
                 'block': obj.block,
-                'active': obj.active,
+                'running': obj.running,
                 }
 
         else:
@@ -46,7 +46,10 @@ class CustomJSONDecoder(JSONDecoder):
             return datetime.timedelta(**d)
 
         elif object_type == 'block':
-            duration = d.pop('duration')
+            try:
+                duration = d.pop('duration')
+            except KeyError:
+                duration = datetime.timedelta(0)
             state = d.pop('state')
             iterations = d.pop('iterations')
             items = self.object_hook(d.pop('items'))

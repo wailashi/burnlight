@@ -12,23 +12,19 @@ class Schedule(object):
     def __init__(self, block, start=datetime.utcnow()):
         self.id = next(Schedule.new_id)
         self.block = block
-        self.due = start
+        self.start = start
         self.output_controller = None
-        self.active = True
-        self._generator = self._start_generator()
-
-    def _start_generator(self):
-        for event in self.block.traverse():
-            self.due = datetime.utcnow() + event.duration
-            yield event
+        if start is not None:
+            self.running = True
+        else:
+            self.running = False
 
     def execute(self):
-        try:
-            next_event = next(self._generator)
-            self.set_outputs(next_event.state)
-        except StopIteration:
+        if self.start + self.block.length <= datetime.utcnow():
             log.info('Schedule %s finished!', self.id)
-            self.active = False
+            self.running = False
+        else:
+            self.set_outputs(self.block.state_at_time(datetime.utcnow() - self.start))
 
     def set_outputs(self, state):
             self.output_controller.update_outputs(1, state)
@@ -46,15 +42,17 @@ class Scheduler(object):
 
     def _worker(self):
         while True:
-            log.info('Worker tick.')
+            log.debug('Worker tick.')
             for schedule in self.schedules.values():
-                if schedule.active and schedule.due < datetime.utcnow():
+                if schedule.running:
                     schedule.execute()
             gevent.sleep(1)
 
-    def add_schedule(self, block, start=datetime.utcnow()):
-        new_schedule = Schedule(block, start)
-        log.info('Adding Schedule %s', new_schedule)
+    def add_schedule(self, block, start=None):
+        if start is None:
+            start = datetime.utcnow()
+        new_schedule = Schedule(block, start=start)
+        log.info('Adding Schedule %s start %s', new_schedule, start)
         new_schedule.output_controller = self.output_controller
         self.schedules[new_schedule.id] = new_schedule
         return new_schedule
