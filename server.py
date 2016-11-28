@@ -59,6 +59,14 @@ def create_schedule():
     return jsonify({'schedule': schedule}), 201
 
 
+@app.route('/api/schedules/<int:schedule>', methods=['GET', 'DELETE'])
+def get_schedule(schedule):
+    if request.method == 'GET':
+        log.debug('GET schedule %s', schedule)
+    elif request.method == 'DELETE':
+        log.debug('DELETE schedule %s', schedule)
+
+
 port = config.getint('Server', 'port')
 server = WSGIServer(('', port), app)
 log.info('Burnlight server started on %s', server.address)

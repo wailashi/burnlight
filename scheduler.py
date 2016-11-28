@@ -9,17 +9,25 @@ log = logging.getLogger(__name__)
 class Schedule(object):
     new_id = itertools.count()
 
-    def __init__(self, block, start=datetime.utcnow()):
+    def __init__(self, block):
         self.id = next(Schedule.new_id)
         self.block = block
-        self.start = start
+        self.start = None
         self.output_controller = None
-        if start is not None:
-            self.running = True
-        else:
-            self.running = False
+        self.running = False
+
+    def run(self, when=datetime.utcnow()):
+        self.start = when
+        self.running = True
+
+    def stop(self):
+        self.running = False
+        self.start = None
 
     def execute(self):
+        if not self.running:
+            log.warning('Trying to execute a inactive schedule %s', self.id)
+            return
         if self.start + self.block.length <= datetime.utcnow():
             log.info('Schedule %s finished!', self.id)
             self.running = False
@@ -48,11 +56,19 @@ class Scheduler(object):
                     schedule.execute()
             gevent.sleep(1)
 
-    def add_schedule(self, block, start=None):
-        if start is None:
-            start = datetime.utcnow()
-        new_schedule = Schedule(block, start=start)
-        log.info('Adding Schedule %s start %s', new_schedule, start)
+    def add_schedule(self, block):
+        new_schedule = Schedule(block)
+        log.info('Adding Schedule %s', new_schedule)
         new_schedule.output_controller = self.output_controller
         self.schedules[new_schedule.id] = new_schedule
+        new_schedule.run()
         return new_schedule
+
+    def start(self, schedule_id, when=datetime.utcnow()):
+        self.schedules[schedule_id].run(when)
+
+    def stop(self, schedule_id):
+        self.schedules[schedule_id].stop()
+
+    def remove(self, schedule_id):
+        self.schedules.pop(schedule_id)
