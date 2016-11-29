@@ -5,7 +5,6 @@ from flask import Flask, jsonify, make_response, request, abort
 from scheduler import Scheduler
 from block import Block
 from serializer import CustomJSONDecoder, CustomJSONEncoder
-from output import OutputController, DebugHandler
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -15,9 +14,7 @@ log.setLevel(logging.DEBUG)
 config = ConfigParser()
 config.read('config.ini')
 
-output_controller = OutputController()
-DebugHandler(output_controller)
-scheduler = Scheduler(output_controller)
+scheduler = Scheduler(config)
 
 app = Flask(__name__)
 app.json_decoder = CustomJSONDecoder

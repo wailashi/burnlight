@@ -2,6 +2,10 @@ import gevent
 import logging
 import itertools
 from datetime import datetime
+try:
+    from rpigpio import RPiGPIO as Channel
+except ImportError:
+    from channels import Dummy as Channel
 
 log = logging.getLogger(__name__)
 
@@ -9,11 +13,14 @@ log = logging.getLogger(__name__)
 class Schedule(object):
     new_id = itertools.count()
 
-    def __init__(self, block):
+    def __init__(self, block, channels):
         self.id = next(Schedule.new_id)
         self.block = block
+        if channels is None:
+            self.channels = {}
+        else:
+            self.channels = channels
         self.start = None
-        self.output_controller = None
         self.running = False
 
     def run(self, when=datetime.utcnow()):
@@ -35,7 +42,8 @@ class Schedule(object):
             self.set_outputs(self.block.state_at_time(datetime.utcnow() - self.start))
 
     def set_outputs(self, state):
-            self.output_controller.update_outputs(1, state)
+        for each in self.channels:
+            each.set(state)
 
     def __repr__(self):
         return '<Schedule {}>'.format(self.id)
@@ -43,10 +51,16 @@ class Schedule(object):
 
 class Scheduler(object):
 
-    def __init__(self, output_controller):
+    def __init__(self, config):
         self.schedules = {}
         self._worker = gevent.Greenlet.spawn(self._worker)
-        self.output_controller = output_controller
+        self.channels = {}
+        self._init_channels(config)
+
+    def _init_channels(self, config):
+        for name, pins in config.items('Channels'):
+            pin_out, pin_in = map(int, pins.split(','))
+            self.channels[name] = Channel(pin_out, pin_in)
 
     def _worker(self):
         while True:
@@ -56,10 +70,9 @@ class Scheduler(object):
                     schedule.execute()
             gevent.sleep(1)
 
-    def add_schedule(self, block):
-        new_schedule = Schedule(block)
+    def add_schedule(self, block, channels=None):
+        new_schedule = Schedule(block, channels)
         log.info('Adding Schedule %s', new_schedule)
-        new_schedule.output_controller = self.output_controller
         self.schedules[new_schedule.id] = new_schedule
         new_schedule.run()
         return new_schedule
