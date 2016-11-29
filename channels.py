@@ -12,7 +12,7 @@ class Channel:
             self.input_pin = input_pin
 
     def set(self, state):
-        pass
+        log.info('Channel %s set to %s', self.name, state)
 
 
 class Dummy(Channel):
