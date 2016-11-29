@@ -23,7 +23,9 @@ class Schedule(object):
         self.start = None
         self.running = False
 
-    def run(self, when=datetime.utcnow()):
+    def run(self, when=None):
+        if when is None:
+            when = datetime.utcnow()
         self.start = when
         self.running = True
 
@@ -60,7 +62,7 @@ class Scheduler(object):
     def _init_channels(self, config):
         for name, pins in config.items('Channels'):
             pin_out, pin_in = map(int, pins.split(','))
-            self.channels[name] = Channel(pin_out, pin_in)
+            self.channels[name] = Channel(name, pin_out, pin_in)
 
     def _worker(self):
         while True:
@@ -71,13 +73,13 @@ class Scheduler(object):
             gevent.sleep(1)
 
     def add_schedule(self, block, channels=None):
-        new_schedule = Schedule(block, channels)
+        new_schedule = Schedule(block, list(self.channels.values()))
         log.info('Adding Schedule %s', new_schedule)
         self.schedules[new_schedule.id] = new_schedule
         new_schedule.run()
         return new_schedule
 
-    def start(self, schedule_id, when=datetime.utcnow()):
+    def start(self, schedule_id, when=None):
         self.schedules[schedule_id].run(when)
 
     def stop(self, schedule_id):
