@@ -7,8 +7,9 @@ class Channel:
 
     def __init__(self, name, output_pin, input_pin=None):
         self.name = name
-        self.input_pin = input_pin
         self.output_pin = output_pin
+        if input_pin is not None:
+            self.input_pin = input_pin
 
     def set(self, state):
         pass
