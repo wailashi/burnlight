@@ -87,3 +87,15 @@ class Scheduler(object):
 
     def remove(self, schedule_id):
         self.schedules.pop(schedule_id)
+
+    def list_schedules(self):
+        schedules_list = {}
+        for schedule_id, schedule in self.schedules.items():
+            summary = {}
+            summary['start'] = schedule.start
+            summary['running'] = schedule.running
+            summary['length'] = schedule.block.length
+
+            schedules_list[schedule_id] = summary
+        print(schedules_list)
+        return schedules_list

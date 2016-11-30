@@ -39,7 +39,7 @@ def bad_request():
 
 @app.route('/api/schedules', methods=['GET'])
 def get_schedules():
-    return jsonify({'schedules': scheduler.schedules})
+    return jsonify(scheduler.list_schedules())
 
 
 @app.route('/api/schedules', methods=['POST'])
@@ -56,13 +56,25 @@ def create_schedule():
     return jsonify({'schedule': schedule}), 201
 
 
-@app.route('/api/schedules/<int:schedule>', methods=['GET', 'DELETE'])
-def get_schedule(schedule):
+@app.route('/api/schedules/<int:schedule_id>', methods=['GET', 'DELETE'])
+def get_schedule(schedule_id):
     if request.method == 'GET':
-        log.debug('GET schedule %s', schedule)
+        log.debug('GET schedule %s', schedule_id)
     elif request.method == 'DELETE':
-        log.debug('DELETE schedule %s', schedule)
+        log.debug('DELETE schedule %s', schedule_id)
 
+
+@app.route('/api/schedules/<int:schedule_id>', methods=['PATCH'])
+def patch_schedule(schedule_id):
+    if not request.get_json(force=True):
+        print('Request has no JSON')
+        abort(400)
+    payload = request.get_json()
+    if payload['command'] == 'run':
+        scheduler.start(schedule_id)
+    elif payload['command'] == 'stop':
+        scheduler.stop(schedule_id)
+    return jsonify({'schedule': scheduler.schedules[schedule_id]}), 200
 
 port = config.getint('Server', 'port')
 server = WSGIServer(('', port), app)
