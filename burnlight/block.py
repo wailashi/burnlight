@@ -3,7 +3,7 @@ import itertools
 import bisect
 
 
-class Block(object):
+class Block:
 
     def __init__(self, state, duration=datetime.timedelta(0), items=None, iterations=1):
         self.iterations = iterations

@@ -1,7 +1,7 @@
 import datetime
 from flask.json import JSONEncoder, JSONDecoder
-from block import Block
-from scheduler import Schedule
+from burnlight.block import Block
+from burnlight.scheduler import Schedule
 
 
 class CustomJSONEncoder(JSONEncoder):

@@ -6,9 +6,12 @@ IN = 'in'
 
 wiringpi2.wiringPiSetupSys()
 
-class Pin(object):
+
+class Pin:
 
     def __init__(self, pin, mode):
+        self.pin = pin
+        self.mode = mode
         self.set_mode(pin, mode)
 
     def set_mode(self, pin, mode):
@@ -30,38 +33,38 @@ class Pin(object):
         else:
             raise ValueError
 
-
-    def isOn(self):
+    def is_on(self):
         if wiringpi2.digitalRead(self.pin) == 1:
             return True
         else:
             return False
 
 
-class Channel(object):
+class Channel:
 
-    def __init__(self, input, output):
-        self.input = input
-        self.output = output
+    def __init__(self, input_pin, output_pin):
+        """
 
+        :type input_pin: Pin
+        :type output_pin: Pin
+        """
+        self.input = input_pin
+        self.output = output_pin
 
     def on(self):
         self.output.on()
 
-
     def off(self):
         self.output.off()
-
 
     def set(self, state):
         self.output.set(state)
 
-
-    def isValid(self):
-        if self.output.isOn() == self.input.isOn():
+    def is_valid(self):
+        if self.output.is_on() == self.input.is_on():
             return True
         else:
             return False
 
 
-channels = {1 : Channel(Pin(17, IN), Pin(4, OUT))}
+channels = {1: Channel(Pin(17, IN), Pin(4, OUT))}

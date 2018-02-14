@@ -3,14 +3,14 @@ import logging
 import itertools
 from datetime import datetime
 try:
-    from rpigpio import RPiGPIO as Channel
+    from burnlight.rpigpio import RPiGPIO as Channel
 except ImportError:
-    from channels import Dummy as Channel
+    from burnlight.channels import Dummy as Channel
 
 log = logging.getLogger(__name__)
 
 
-class Schedule(object):
+class Schedule:
     new_id = itertools.count()
 
     def __init__(self, block, channels):
@@ -51,7 +51,7 @@ class Schedule(object):
         return '<Schedule {}>'.format(self.id)
 
 
-class Scheduler(object):
+class Scheduler:
 
     def __init__(self, config):
         self.schedules = {}

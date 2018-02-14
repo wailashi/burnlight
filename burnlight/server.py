@@ -2,9 +2,9 @@ import logging
 from configparser import ConfigParser
 from gevent.pywsgi import WSGIServer
 from flask import Flask, jsonify, make_response, request, abort
-from scheduler import Scheduler
-from block import Block
-from serializer import CustomJSONDecoder, CustomJSONEncoder
+from burnlight.scheduler import Scheduler
+from burnlight.block import Block
+from burnlight.serializer import CustomJSONDecoder, CustomJSONEncoder
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -24,7 +24,7 @@ app.debug = True
 
 @app.route('/')
 def index():
-    return "Hello World!"
+    return "Burnlight LED controller."
 
 
 @app.errorhandler(404)

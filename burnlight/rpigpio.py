@@ -1,4 +1,4 @@
-from channels import Channel
+from burnlight.channels import Channel
 import RPi.GPIO as gpio
 
 
