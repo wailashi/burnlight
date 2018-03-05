@@ -13,11 +13,12 @@ log = logging.getLogger(__name__)
 class Schedule:
     new_id = itertools.count()
 
-    def __init__(self, block, channels):
+    def __init__(self, program, channels):
         self.id = next(Schedule.new_id)
-        self.block = block
+        self.program = program
+        self.state = None
         if channels is None:
-            self.channels = {}
+            self.channels = dict()
         else:
             self.channels = channels
         self.start = None
@@ -35,17 +36,20 @@ class Schedule:
 
     def execute(self):
         if not self.running:
-            log.warning('Trying to execute a inactive schedule %s', self.id)
+            log.warning('Trying to execute an inactive schedule %s', self.id)
             return
-        if self.start + self.block.length <= datetime.utcnow():
+        if self.start + self.program.length <= datetime.utcnow():
             log.info('Schedule %s finished!', self.id)
             self.running = False
         else:
-            self.set_outputs(self.block.state_at_time(datetime.utcnow() - self.start))
+            state = self.program.state_at(datetime.utcnow() - self.start)
+            if state is not self.state:
+                self.state = state
+                self.set_outputs(self.state)
 
     def set_outputs(self, state):
-        for each in self.channels:
-            each.set(state)
+        for channel in self.channels:
+            channel.set(state)
 
     def __repr__(self):
         return '<Schedule {}>'.format(self.id)
@@ -72,8 +76,8 @@ class Scheduler:
                     schedule.execute()
             gevent.sleep(1)
 
-    def add_schedule(self, block, channels=None):
-        new_schedule = Schedule(block, list(self.channels.values()))
+    def add_schedule(self, program, channels=None):
+        new_schedule = Schedule(program, list(self.channels.values()))
         log.info('Adding Schedule %s', new_schedule)
         self.schedules[new_schedule.id] = new_schedule
         new_schedule.run()
@@ -94,7 +98,7 @@ class Scheduler:
             summary = {}
             summary['start'] = schedule.start
             summary['running'] = schedule.running
-            summary['length'] = schedule.block.length
+            summary['length'] = schedule.program.length.total_seconds()
 
             schedules_list[schedule_id] = summary
         print(schedules_list)

@@ -1,27 +1,21 @@
 from lark import Lark, Transformer
 from burnlight.program import Program, Transition, Loop
+from datetime import timedelta
 
 schedule_grammar = r"""
     ?start: program
     
-    program: "{" [element ("," element)*] "}"
+    program: "{" [_element ("," _element)*] "}"
     
-    ?element: transition
-            | parameter
+    _element: transition
             | loop
     
     transition: "(" CNAME "," duration ")"
-    parameter: name ":" string
-    loop: "loop" number ":" program
+    loop: "loop" INT ":" program
     
-    ?duration: number
-    string: ESCAPED_STRING
-    name: CNAME
-    ?number: DECIMAL | INT
+    ?duration: INT -> number
     
-    %import common.ESCAPED_STRING
     %import common.CNAME
-    %import common.DECIMAL
     %import common.INT
     %import common.WS
     
@@ -43,8 +37,8 @@ class ProgramTransformer(Transformer):
         iterations, program = children
         return Loop(iterations, program)
 
-    def duration(self, count):
-        return float(count)
+    def number(self, count):
+        return timedelta(seconds=float(count[0]))
 
     def parameter(self, children):
         name, value = children
@@ -53,17 +47,11 @@ class ProgramTransformer(Transformer):
     def string(self, children):
         return children[0][1:-1]
 
-    def name(self, children):
-        return children[0][:]
-
-    def number(self, count):
-        return int(count)
+    def CNAME(self, children):
+        return children[0][1:-1]
 
 test_program = """
 {
-    name: "A schedule",
-    unit: "minute",
-
     (On, 10),
     (Off, 20),
     loop 3:
@@ -74,10 +62,14 @@ test_program = """
 }
 """
 
-parser = Lark(schedule_grammar)
-tree = parser.parse(test_program)
-program = ProgramTransformer().transform(tree)
-print(tree.pretty())
-print(program)
-for x in program.flatten():
-    print(x)
+def loadBSL(program):
+    """Parses a Burnlight Scheduling Language string into a Program"""
+    parser = Lark(schedule_grammar)
+    return ProgramTransformer().transform(parser.parse(program))
+
+if __name__ == '__main__':
+    parser = Lark(schedule_grammar)
+    tree = parser.parse(test_program)
+    print(tree.pretty())
+    program = ProgramTransformer().transform(tree)
+    print(program)

@@ -2,3 +2,5 @@ flask
 gevent
 RPi.GPIO
 lark-parser
+requests
+click

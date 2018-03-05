@@ -1,10 +1,10 @@
 import logging
+import os.path
 from configparser import ConfigParser
 from gevent.pywsgi import WSGIServer
 from flask import Flask, jsonify, make_response, request, abort
 from burnlight.scheduler import Scheduler
-from burnlight.block import Block
-from burnlight.serializer import CustomJSONDecoder, CustomJSONEncoder
+from burnlight.programparser import loadBSL
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -12,13 +12,12 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 config = ConfigParser()
-config.read('config.ini')
+config_path = os.path.join(os.path.dirname(__file__), '../config.ini')
+config.read(config_path)
 
 scheduler = Scheduler(config)
 
 app = Flask(__name__)
-app.json_decoder = CustomJSONDecoder
-app.json_encoder = CustomJSONEncoder
 app.debug = True
 
 
@@ -28,12 +27,12 @@ def index():
 
 
 @app.errorhandler(404)
-def not_found():
+def not_found(e):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
 @app.errorhandler(400)
-def bad_request():
+def bad_request(e):
     return make_response(jsonify({'error': 'Bad request'}), 400)
 
 
@@ -47,13 +46,11 @@ def create_schedule():
     if not request.get_json(force=True):
         print('Request has no JSON')
         abort(400)
-    block = request.get_json()
-    if not isinstance(block, Block):
-        print('Not a valid Block object')
-        abort(400)
+    bsl = request.get_json()['program']
+    program = loadBSL(bsl)
     print('Adding schedule')
-    schedule = scheduler.add_schedule(block)
-    return jsonify({'schedule': schedule}), 201
+    schedule = scheduler.add_schedule(program)
+    return jsonify({'schedule': program.to_bsl()}), 201
 
 
 @app.route('/api/schedules/<int:schedule_id>', methods=['GET', 'DELETE'])
