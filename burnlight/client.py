@@ -88,5 +88,15 @@ def stop(ctx, schedule_id):
     click.echo('Stopping schedule {}'.format(schedule_id))
     patch('/api/schedules/' + str(schedule_id), json.dumps({'command': 'stop'}))
 
+
+@schedules.command()
+@click.argument('schedule_id', type=click.INT)
+@click.pass_obj
+def start(ctx, schedule_id):
+    """Starts a schedule."""
+    click.echo('Starting schedule {}'.format(schedule_id))
+    patch('/api/schedules/' + str(schedule_id), json.dumps({'command': 'start'}))
+
+
 if __name__ == '__main__':
     cli()

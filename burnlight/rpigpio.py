@@ -4,6 +4,7 @@ import RPi.GPIO as gpio
 
 log = logging.getLogger(__name__)
 
+
 class RPiGPIO(Channel):
 
     def __init__(self, name, output_pin, input_pin=None):

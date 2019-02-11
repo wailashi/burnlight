@@ -69,6 +69,7 @@ class Scheduler:
             self.channels[name] = Channel(name, pin_out, pin_in)
 
     def _worker(self):
+        logging.info('Worker starting.')
         while True:
             log.debug('Worker tick.')
             for schedule in self.schedules.values():
@@ -95,11 +96,16 @@ class Scheduler:
     def list_schedules(self):
         schedules_list = {}
         for schedule_id, schedule in self.schedules.items():
-            summary = {}
-            summary['start'] = schedule.start
-            summary['running'] = schedule.running
-            summary['length'] = schedule.program.length.total_seconds()
+            summary = {
+                'start': schedule.start,
+                'running': schedule.running,
+                'length': schedule.program.length.total_seconds()
+            }
 
             schedules_list[schedule_id] = summary
-        print(schedules_list)
         return schedules_list
+
+    def list_channels(self):
+        return {
+            name: c.status() for name, c in self.channels.items()
+        }

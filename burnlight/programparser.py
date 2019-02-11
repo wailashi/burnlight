@@ -1,6 +1,7 @@
 from lark import Lark, Transformer
 from burnlight.program import Program, Transition, Loop
 from datetime import timedelta
+from collections import namedtuple
 
 schedule_grammar = r"""
     ?start: program
@@ -21,8 +22,9 @@ schedule_grammar = r"""
     
     %ignore WS
     """
-from collections import namedtuple
 Parameter = namedtuple('Parameter', 'name value')
+
+
 class ProgramTransformer(Transformer):
     def program(self, children):
         params = {x.name: x.value for x in children if type(x) is Parameter}
@@ -62,10 +64,12 @@ test_program = """
 }
 """
 
+
 def loadBSL(program):
     """Parses a Burnlight Scheduling Language string into a Program"""
     parser = Lark(schedule_grammar)
     return ProgramTransformer().transform(parser.parse(program))
+
 
 if __name__ == '__main__':
     parser = Lark(schedule_grammar)

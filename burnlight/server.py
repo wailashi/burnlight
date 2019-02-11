@@ -48,9 +48,13 @@ def create_schedule():
         abort(400)
     bsl = request.get_json()['program']
     program = loadBSL(bsl)
-    print('Adding schedule')
     schedule = scheduler.add_schedule(program)
     return jsonify({'schedule': program.to_bsl()}), 201
+
+
+@app.route('/api/channels', methods=['GET'])
+def list_channels():
+    return jsonify(scheduler.list_channels())
 
 
 @app.route('/api/schedules/<int:schedule_id>', methods=['GET', 'DELETE'])
@@ -67,11 +71,12 @@ def patch_schedule(schedule_id):
         print('Request has no JSON')
         abort(400)
     payload = request.get_json()
-    if payload['command'] == 'run':
+    if payload['command'] == 'start':
         scheduler.start(schedule_id)
     elif payload['command'] == 'stop':
         scheduler.stop(schedule_id)
-    return jsonify({'schedule': scheduler.schedules[schedule_id]}), 200
+    return '', 200
+
 
 port = config.getint('Server', 'port')
 server = WSGIServer(('', port), app)
