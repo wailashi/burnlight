@@ -1,8 +1,10 @@
 import logging
-from datetime import datetime
+from gpiozero import DigitalOutputDevice, DigitalInputDevice, Device
+from gpiozero.pins.mock import MockFactory
 
 log = logging.getLogger(__name__)
 
+Device.pin_factory = MockFactory()
 
 class Channel:
 
@@ -12,47 +14,28 @@ class Channel:
         self.output_pin = output_pin
         if input_pin is not None:
             self.input_pin = input_pin
+        self.output_device = DigitalOutputDevice(output_pin)
+        if input_pin:
+            self.input_device = DigitalInputDevice(input_pin)
 
     def set(self, state):
         self.state = state
+        if state == 'On':
+            self.output_device.on()
+        elif state == 'Off':
+            self.output_device.off()
+        else:
+            raise NotImplementedError
         log.info('Channel %s set to %s', self.name, state)
-
-    @property
-    def output(self):
-        raise NotImplementedError
-
-    @property
-    def input(self):
-        raise NotImplementedError
 
     def valid(self):
         if self.input_pin is None:
             return None
         else:
-            return self.output == self.input
+            return self.output_device.value == self.input_device.value
 
     def status(self):
         return {
             'state': self.state,
             'valid': self.valid(),
         }
-
-
-class Dummy(Channel):
-
-    def __init__(self, name, output_pin, input_pin=None):
-        log.info('Init dummy channel %s' % name)
-        Channel.__init__(self, name, output_pin, input_pin)
-
-    def input(self):
-        if self.input_pin is None:
-            return None
-        else:
-            return self.state
-
-    def output(self):
-        return self.state
-
-    def set(self, state):
-        self.state = state
-        print('{} Channel: \'{}\' set to {}'.format(datetime.utcnow(), self.name, state))

@@ -2,6 +2,7 @@ import click
 import requests
 import json
 
+
 class Context:
     def __init__(self, url):
         self.url = url
@@ -32,12 +33,14 @@ def post(address, payload):
     except requests.exceptions.RequestException as e:
         click.echo(e)
 
+
 def patch(address, payload):
     ctx = click.get_current_context()
     try:
         requests.patch(ctx.obj.url + address, data=payload)
     except requests.exceptions.RequestException as e:
         click.echo(e)
+
 
 @click.group()
 @click.option('--host', '-H', default='localhost')

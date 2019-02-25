@@ -1,6 +1,6 @@
 flask
 gevent
-RPi.GPIO
+gpiozero
 lark-parser
 requests
 click

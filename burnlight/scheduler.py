@@ -2,10 +2,7 @@ import gevent
 import logging
 import itertools
 from datetime import datetime
-try:
-    from burnlight.rpigpio import RPiGPIO as Channel
-except ImportError:
-    from burnlight.channels import Dummy as Channel
+from burnlight.channels import Channel
 
 log = logging.getLogger(__name__)
 
@@ -65,8 +62,8 @@ class Scheduler:
 
     def _init_channels(self, config):
         for name, pins in config.items('Channels'):
-            pin_out, pin_in = map(int, pins.split(','))
-            self.channels[name] = Channel(name, pin_out, pin_in)
+            pin_out, pin_in = pins.split(',')
+            self.channels[name] = Channel(name, pin_out.strip(), pin_in.strip())
 
     def _worker(self):
         logging.info('Worker starting.')
