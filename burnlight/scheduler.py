@@ -57,6 +57,7 @@ class Scheduler:
     def __init__(self, config):
         self.schedules = {}
         self._worker = gevent.Greenlet.spawn(self._worker)
+        self._sentinel = gevent.Greenlet.spawn(self._sentinel)
         self.channels = {}
         self._init_channels(config)
 
@@ -74,7 +75,17 @@ class Scheduler:
                     schedule.execute()
             gevent.sleep(1)
 
-    def add_schedule(self, program, channels=None):
+    def _sentinel(self):
+        logging.info('Sentinel starting.')
+        while True:
+            log.debug('Sentinel tick.')
+            for schedule in self.schedules.values():
+                for channel in schedule.channels:
+                    if channel.valid() is False:
+                        log.warning('Channel {} output is not valid!'.format(channel.name))
+            gevent.sleep(5)
+
+    def add_schedule(self, program):
         new_schedule = Schedule(program, list(self.channels.values()))
         log.info('Adding Schedule %s', new_schedule)
         self.schedules[new_schedule.id] = new_schedule
