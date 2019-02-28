@@ -1,10 +1,8 @@
 import logging
 from gpiozero import DigitalOutputDevice, DigitalInputDevice, Device
-from gpiozero.pins.mock import MockFactory
 
 log = logging.getLogger(__name__)
 
-Device.pin_factory = MockFactory()
 
 class Channel:
 
