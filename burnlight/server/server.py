@@ -1,4 +1,6 @@
 import logging
+import os
+from datetime import datetime
 from pathlib import Path
 from configparser import ConfigParser
 from gevent.pywsgi import WSGIServer
@@ -12,20 +14,19 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 config = ConfigParser()
-config_path = Path('~/.config/burnlight/config.ini').expanduser()
+config_path = Path(os.path.expanduser('~/.config/burnlight/config.ini'))
 if not config_path.is_file():
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config['Server'] = {'port': 34455}
     config['Channels'] = {
-        'Channel 1': 'GPIO7, GPIO3',
-        'Channel 2': 'GPIO11, GPI012',
-        'Channel 3': 'GPIO13, GPIO15',
-        'Channel 4': 'GPIO16, GPIO18',
-        'Channel 5': 'GPIO19, GPIO20',
+        'Channel 1': 'GPIO4, GPIO5',
+        'Channel 2': 'GPIO17, GPIO18',
+        'Channel 3': 'GPIO27, GPIO22',
+        'Channel 4': 'GPIO23, GPIO24',
     }
     config.write(open(config_path, 'w'))
 else:
-    config.read(config_path)
+    config.read(str(config_path))
 
 scheduler = Scheduler(config)
 
@@ -96,3 +97,7 @@ def main():
     server = WSGIServer(('', port), app)
     log.info('Burnlight server started on %s', server.address)
     server.serve_forever()
+
+
+if __name__ == '__main__':
+    main()
