@@ -89,10 +89,13 @@ class Scheduler:
         new_schedule = Schedule(program, list(self.channels.values()))
         log.info('Adding Schedule %s', new_schedule)
         self.schedules[new_schedule.id] = new_schedule
-        new_schedule.run()
         return new_schedule
 
     def start(self, schedule_id, when=None):
+        """Starts a schedule. Any running schedule will be stopped."""
+        for schedule in self.schedules.values():
+            schedule.stop()
+        log.info('Running schedule {}'.format(schedule_id))
         self.schedules[schedule_id].run(when)
 
     def stop(self, schedule_id):
