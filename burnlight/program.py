@@ -24,18 +24,12 @@ class Program:
             self.offset_memoize = (offsets, states)
         return self.offset_memoize
 
-    def state_at_time(self, time):
-        offsets, state = self.offsets()
-        i = bisect.bisect(offsets, time)
-        return state[i]
-
     def state_at(self, time):
         offsets = list(itertools.accumulate((x.length for x in self.elements)))
         index = bisect.bisect(offsets, time)
         offset = offsets[index]
         element = self.elements[index]
         return element.state_at(time - offset)
-
 
     @property
     def length(self):

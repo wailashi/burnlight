@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='burnlight',
-    version='0.2.0rc1',
+    version='0.2.0',
     description='GPIO scheduler for Raspberry Pis',
     long_description=README,
     long_description_content_type='text/markdown',

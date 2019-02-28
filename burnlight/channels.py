@@ -17,6 +17,7 @@ class Channel:
             self.input_device = DigitalInputDevice(input_pin)
 
     def set(self, state):
+        """Sets the channel output"""
         self.state = state
         if state == 'On':
             self.output_device.on()
@@ -27,6 +28,14 @@ class Channel:
         log.info('Channel %s set to %s', self.name, state)
 
     def valid(self):
+        """
+        Checks if the channel output is valid
+
+        Returns: True, if the output and input pin states match.
+                 False, if they don't match.
+                 None, if no input pin is defined.
+
+        """
         if self.input_pin is None:
             return None
         else:

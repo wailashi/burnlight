@@ -39,7 +39,7 @@ class Schedule:
             log.info('Schedule %s finished!', self.id)
             self.running = False
         else:
-            state = self.program.state_at(datetime.utcnow() - self.start)
+            state = self.program.state_at(datetime.utcnow() - self.start)  # FIXME this misses 0 length events.
             if state is not self.state:
                 self.state = state
                 self.set_outputs(self.state)
@@ -67,6 +67,10 @@ class Scheduler:
             self.channels[name] = Channel(name, pin_out.strip(), pin_in.strip())
 
     def _worker(self):
+        """
+        The worker executes running schedules.
+
+        """
         logging.info('Worker starting.')
         while True:
             log.debug('Worker tick.')
@@ -76,6 +80,10 @@ class Scheduler:
             gevent.sleep(1)
 
     def _sentinel(self):
+        """
+        The sentinel periodically checks that the channel outputs are valid.
+
+        """
         logging.info('Sentinel starting.')
         while True:
             log.debug('Sentinel tick.')
