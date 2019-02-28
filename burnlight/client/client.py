@@ -61,9 +61,9 @@ def schedules(ctx):
     """Manage schedules."""
 
 
-@schedules.command()
+@schedules.command(name='list')
 @click.pass_obj
-def list(ctx):
+def schedules_list(ctx):
     """List all schedules."""
     try:
         click.echo(get('/api/schedules'))
@@ -71,34 +71,48 @@ def list(ctx):
         click.echo(e)
 
 
-@schedules.command()
-@click.option('--run', is_flag=True)
+@schedules.command(name='add')
+@click.option('--start_time')
 @click.argument('schedule', type=click.File('rb'))
 @click.pass_obj
-def add(ctx, schedule, run):
+def schedules_add(ctx, schedule, start_time=None):
     """Add a schedule."""
     click.echo('Adding schedule {}'.format(schedule.name))
-    post('/api/schedules', json.dumps({'program': schedule.read().decode('utf-8')}))
-    if run:
-        click.echo('Running schedule {}'.format(schedule))
+    post('/api/schedules', json.dumps({'program': schedule.read().decode('utf-8'), 'start_time': start_time}))
 
 
-@schedules.command()
+@schedules.command(name='stop')
 @click.argument('schedule_id', type=click.INT)
 @click.pass_obj
-def stop(ctx, schedule_id):
+def schedules_stop(ctx, schedule_id):
     """Stop a schedule."""
     click.echo('Stopping schedule {}'.format(schedule_id))
     patch('/api/schedules/' + str(schedule_id), json.dumps({'command': 'stop'}))
 
 
-@schedules.command()
+@schedules.command(name='start')
 @click.argument('schedule_id', type=click.INT)
+@click.option('--start_time')
 @click.pass_obj
-def start(ctx, schedule_id):
+def schedules_start(ctx, schedule_id, start_time=None):
     """Starts a schedule."""
     click.echo('Starting schedule {}'.format(schedule_id))
-    patch('/api/schedules/' + str(schedule_id), json.dumps({'command': 'start'}))
+    patch('/api/schedules/' + str(schedule_id), json.dumps({'command': 'start', 'start_time': start_time}))
+
+
+@cli.group()
+@click.pass_context
+def channels(ctx):
+    """Manage channels."""
+
+
+@channels.command(name='list')
+@click.pass_obj
+def channels_list(ctx):
+    try:
+        click.echo(get('/api/channels'))
+    except requests.exceptions.RequestException as e:
+        click.echo(e)
 
 
 if __name__ == '__main__':

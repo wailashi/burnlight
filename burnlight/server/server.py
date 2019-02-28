@@ -59,9 +59,19 @@ def create_schedule():
     if not request.get_json(force=True):
         print('Request has no JSON')
         abort(400)
-    bsl = request.get_json()['program']
+    payload = request.get_json()
+    bsl = payload['program']
     program = loadBSL(bsl)
-    schedule = scheduler.add_schedule(program)
+    new_schedule = scheduler.add_schedule(program)
+    if payload['start_time']:
+        start_time = payload.get('start_time', None)
+        if start_time == 'now':
+            when = datetime.utcnow()
+        elif start_time is not None:
+            log.error('Starting times other than "now" are not supported yet!')
+            return jsonify({'error': 'Invalid start_time'}), 500
+
+        scheduler.start(new_schedule.id, when)
     return jsonify({'schedule': program.to_bsl()}), 201
 
 
@@ -85,7 +95,11 @@ def patch_schedule(schedule_id):
         abort(400)
     payload = request.get_json()
     if payload['command'] == 'start':
-        scheduler.start(schedule_id)
+        start_time = payload.get('start_time', 'now')
+        if start_time == 'now' or start_time is None:
+            when = datetime.utcnow()
+
+        scheduler.start(schedule_id, when)
     elif payload['command'] == 'stop':
         scheduler.stop(schedule_id)
     return '', 200
