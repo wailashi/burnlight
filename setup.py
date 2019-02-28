@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='burnlight',
-    version='0.1.3',
+    version='0.2.0rc1',
     description='GPIO scheduler for Raspberry Pis',
     long_description=README,
     long_description_content_type='text/markdown',
@@ -25,9 +25,6 @@ setup(
         'gpiozero',
         'requests'
 
-    ],
-    data_files = [
-        ('~/.local/share/systemd/system', ['burnlight/burnlightd.service'])
     ],
     url='https://github.com/wailashi/burnlight',
     license='MIT',

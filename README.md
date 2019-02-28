@@ -3,7 +3,7 @@ Burnlight is a server and client for automating the control
 of the GPIO pins on a Raspberry Pi.
 
 ## Features
-- Can run multiple schedules each with one or more outputs.
+- Run custom schedules controlling one or more GPIO pins.
 - Web API for remote management and monitoring.
 - Paired input and output for feedback on controlled systems.
 
@@ -13,11 +13,7 @@ of the GPIO pins on a Raspberry Pi.
 * [Lark parser](https://github.com/lark-parser/lark) - Parses BSL programs.
 * [gpiozero](https://gpiozero.readthedocs.io) - Controls GPIO outputs on Raspberry Pi computers.
 
-## Installation on Raspbian
-Install gevent:
-```
-$ sudo apt-get install gevent
-```
+## Getting started on Raspbian
 Install Burnlight using pip:
 ```
 $ pip install burnlight
@@ -26,6 +22,20 @@ Start the server:
 ```
 $ burnlightd
 ```
+Create a file `schedule.bsl` with the following contents:
+```
+{
+    loop 10: {
+        (On,1),
+        (Off,1)
+    }
+}
+```
+Add and start the schedule using the client
+```
+$ burnlight schedules add schedule.bsl --start_time now
+```
+
 
 ## Burnlight Scheduling Language (BSL)
 Schedules are described with a simple language.
